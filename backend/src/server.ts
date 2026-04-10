@@ -1,5 +1,6 @@
 import Fastify from "fastify";
 import { env } from "./env.js";
+import { registerCellRoutes } from "./routes/cells.js";
 
 export async function buildServer() {
   const fastify = Fastify({
@@ -9,6 +10,8 @@ export async function buildServer() {
   fastify.get("/api/health", async () => {
     return { status: "ok" };
   });
+
+  await registerCellRoutes(fastify);
 
   return fastify;
 }
