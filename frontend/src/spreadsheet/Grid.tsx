@@ -56,6 +56,8 @@ export function Grid({
         {Array.from({ length: cols }, (_, c) => (
           <div
             key={`col-${c}`}
+            role="columnheader"
+            aria-label={`Column ${colLetter(c)}`}
             className="bg-surface border-r border-b border-border text-text-muted text-xs text-center sticky top-0 z-10 h-7 flex items-center justify-center"
           >
             {colLetter(c)}
@@ -67,6 +69,8 @@ export function Grid({
           elements.push(
             <div
               key={`rownum-${r}`}
+              role="rowheader"
+              aria-label={`Row ${r + 1}`}
               className="bg-surface border-r border-b border-border text-text-muted text-xs text-center sticky left-0 z-10 flex items-center justify-center"
             >
               {r + 1}

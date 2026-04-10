@@ -13,8 +13,12 @@ test.describe("cellsite spreadsheet", () => {
   test("renders the ribbon, grid headers, and sheet tabs", async ({ page }) => {
     await page.goto("/");
     await expect(page.getByText("セルサイト")).toBeVisible();
-    await expect(page.getByText("A")).toBeVisible();
-    await expect(page.getByText("J")).toBeVisible();
+    await expect(
+      page.getByRole("columnheader", { name: "Column A" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("columnheader", { name: "Column J" }),
+    ).toBeVisible();
     await expect(page.getByText("Creative")).toBeVisible();
   });
 
@@ -26,7 +30,7 @@ test.describe("cellsite spreadsheet", () => {
     await page.locator('[data-row="0"][data-col="0"]').dblclick();
 
     await expect(page.getByRole("dialog")).toBeVisible();
-    await page.getByLabel("Title").fill("GitHub");
+    await page.getByLabel("Title", { exact: true }).fill("GitHub");
     await page.getByLabel("Japanese subtitle").fill("コード");
     await page.getByLabel("External URL").fill("https://github.com");
     await page.getByRole("button", { name: "Save" }).click();
