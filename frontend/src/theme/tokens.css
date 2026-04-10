@@ -1,0 +1,69 @@
+:root {
+  /* Light mode (default) — warm washi parchment */
+  --color-base: 245 240 232;
+  --color-surface: 235 229 217;
+  --color-muted: 240 235 226;
+  --color-border: 212 205 192;
+  --color-text: 58 58 58;
+  --color-text-muted: 138 133 120;
+  --color-accent: 196 86 58;
+  --color-accent-blog: 196 86 58;
+  --color-accent-gallery: 58 122 90;
+  --color-accent-audio: 138 106 58;
+  --color-accent-document: 58 90 138;
+  --color-accent-presentation: 138 58 90;
+  --color-accent-external: 90 122 58;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Dark mode — deep indigo */
+    --color-base: 20 20 31;
+    --color-surface: 14 14 24;
+    --color-muted: 10 10 20;
+    --color-border: 34 34 58;
+    --color-text: 200 200 208;
+    --color-text-muted: 90 90 112;
+    --color-accent: 212 117 106;
+    --color-accent-blog: 212 117 106;
+    --color-accent-gallery: 122 184 148;
+    --color-accent-audio: 192 154 106;
+    --color-accent-document: 122 150 192;
+    --color-accent-presentation: 184 122 150;
+    --color-accent-external: 150 184 122;
+  }
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+  --color-base: 245 240 232;
+  --color-surface: 235 229 217;
+  --color-muted: 240 235 226;
+  --color-border: 212 205 192;
+  --color-text: 58 58 58;
+  --color-text-muted: 138 133 120;
+  --color-accent: 196 86 58;
+  --color-accent-blog: 196 86 58;
+  --color-accent-gallery: 58 122 90;
+  --color-accent-audio: 138 106 58;
+  --color-accent-document: 58 90 138;
+  --color-accent-presentation: 138 58 90;
+  --color-accent-external: 90 122 58;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --color-base: 20 20 31;
+  --color-surface: 14 14 24;
+  --color-muted: 10 10 20;
+  --color-border: 34 34 58;
+  --color-text: 200 200 208;
+  --color-text-muted: 90 90 112;
+  --color-accent: 212 117 106;
+  --color-accent-blog: 212 117 106;
+  --color-accent-gallery: 122 184 148;
+  --color-accent-audio: 192 154 106;
+  --color-accent-document: 122 150 192;
+  --color-accent-presentation: 184 122 150;
+  --color-accent-external: 150 184 122;
+}

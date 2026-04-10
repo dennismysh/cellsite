@@ -1,8 +1,18 @@
-:root {
-  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-  line-height: 1.5;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import "./theme/tokens.css";
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
 }
 
 body {
-  margin: 0;
+  background-color: rgb(var(--color-base));
+  color: rgb(var(--color-text));
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
