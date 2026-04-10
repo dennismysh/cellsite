@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { cellsApi } from "../lib/cells.js";
 import { DEFAULT_GRID_COLS, DEFAULT_GRID_ROWS } from "@cellsite/shared";
@@ -5,10 +6,12 @@ import { Ribbon } from "./Ribbon.js";
 import { FormulaBar } from "./FormulaBar.js";
 import { SheetTabs } from "./SheetTabs.js";
 import { Grid } from "./Grid.js";
+import { ExpandedCell } from "./ExpandedCell.js";
 import { useHoveredCell } from "./useHoveredCell.js";
 import type { Cell } from "@cellsite/shared";
 
 export function SpreadsheetPage() {
+  const [expanded, setExpanded] = useState<Cell | null>(null);
   const { setHoveredCell, setHoveredPosition } = useHoveredCell();
 
   const { data: cells = [], isLoading } = useQuery({
@@ -17,8 +20,7 @@ export function SpreadsheetPage() {
   });
 
   const handleCellClick = (cell: Cell) => {
-    // Placeholder — expand-in-place comes in Task 23
-    console.log("clicked cell", cell);
+    setExpanded(cell);
   };
 
   const handleCellHover = (
@@ -30,8 +32,13 @@ export function SpreadsheetPage() {
   };
 
   const handleEmptyDoubleClick = (row: number, col: number) => {
-    // Wired in Task 26
-    console.log("empty double-click", row, col);
+    console.log("empty double-click", row, col); // wired in Task 26
+  };
+
+  const handleOpen = (cell: Cell) => {
+    if (cell.type === "external" && cell.externalUrl) {
+      window.open(cell.externalUrl, "_blank", "noopener,noreferrer");
+    }
   };
 
   return (
@@ -53,6 +60,13 @@ export function SpreadsheetPage() {
         />
       )}
       <SheetTabs />
+      {expanded && (
+        <ExpandedCell
+          cell={expanded}
+          onClose={() => setExpanded(null)}
+          onOpen={handleOpen}
+        />
+      )}
     </div>
   );
 }
