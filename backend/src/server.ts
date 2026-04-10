@@ -1,4 +1,5 @@
 import Fastify from "fastify";
+import cors from "@fastify/cors";
 import { env } from "./env.js";
 import { registerCellRoutes } from "./routes/cells.js";
 
@@ -6,6 +7,13 @@ export async function buildServer() {
   const fastify = Fastify({
     logger: env.NODE_ENV !== "test",
   });
+
+  if (env.NODE_ENV === "development") {
+    await fastify.register(cors, {
+      origin: "http://localhost:5173",
+      credentials: true,
+    });
+  }
 
   fastify.get("/api/health", async () => {
     return { status: "ok" };
