@@ -29,7 +29,7 @@ export async function buildServer() {
   return fastify;
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (import.meta.filename === process.argv[1]) {
   const server = await buildServer();
   try {
     await server.listen({ port: env.PORT, host: "0.0.0.0" });
