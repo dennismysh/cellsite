@@ -44,7 +44,10 @@ export function Grid({
   const gridTemplateColumns = `32px repeat(${cols}, minmax(120px, 1fr))`;
 
   return (
-    <div className="flex-1 overflow-auto">
+    <div
+      className="flex-1 overflow-auto"
+      style={{ WebkitOverflowScrolling: "touch" }}
+    >
       <div
         className="grid"
         style={{ gridTemplateColumns, gridAutoRows: "minmax(90px, auto)" }}
