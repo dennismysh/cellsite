@@ -9,7 +9,6 @@ build/
 *.log
 .DS_Store
 .superpowers/
-backend/src/db/migrations/meta/
 uploads/
 playwright-report/
 test-results/
