@@ -1,6 +1,8 @@
 node_modules/
+.npm-cache/
 dist/
 build/
+*.tsbuildinfo
 .env
 .env.local
 *.log
