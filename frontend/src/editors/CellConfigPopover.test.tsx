@@ -12,8 +12,8 @@ describe("CellConfigPopover", () => {
         onCancel={vi.fn()}
       />,
     );
-    expect(screen.getByLabelText(/title/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/type/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^title$/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^type$/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/external url/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /save/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /cancel/i })).toBeInTheDocument();
@@ -30,8 +30,8 @@ describe("CellConfigPopover", () => {
       />,
     );
 
-    await user.type(screen.getByLabelText(/title/i), "GitHub");
-    await user.type(screen.getByLabelText(/japanese/i), "コード");
+    await user.type(screen.getByLabelText(/^title$/i), "GitHub");
+    await user.type(screen.getByLabelText(/japanese subtitle/i), "コード");
     await user.type(
       screen.getByLabelText(/external url/i),
       "https://github.com",

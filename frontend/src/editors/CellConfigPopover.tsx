@@ -87,9 +87,9 @@ export function CellConfigPopover({
           </label>
 
           <label className="block">
-            <span className="text-text-muted">Japanese caption (optional)</span>
+            <span className="text-text-muted">Japanese subtitle (optional)</span>
             <input
-              aria-label="Japanese caption"
+              aria-label="Japanese subtitle"
               type="text"
               value={subtitleJa}
               onChange={(e) => setSubtitleJa(e.target.value)}
