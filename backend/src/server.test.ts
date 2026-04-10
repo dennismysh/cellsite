@@ -19,3 +19,18 @@ describe("server", () => {
     expect(response.json()).toEqual({ status: "ok" });
   });
 });
+
+describe("server static handling", () => {
+  it("returns 404 JSON for unknown /api/* routes", async () => {
+    const app = await buildServer();
+    try {
+      const response = await app.inject({
+        method: "GET",
+        url: "/api/nonexistent",
+      });
+      expect(response.statusCode).toBe(404);
+    } finally {
+      await app.close();
+    }
+  });
+});
