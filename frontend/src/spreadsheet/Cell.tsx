@@ -6,6 +6,8 @@ interface CellProps {
   onClick: (cell: CellData) => void;
   onHover: (cell: CellData | null) => void;
   onDoubleClick?: (cell: CellData) => void;
+  onDragStart?: (cell: CellData) => void;
+  onDragEnd?: () => void;
 }
 
 const ACCENT_CLASS: Record<CellType, string> = {
@@ -26,13 +28,26 @@ const GRADIENT_CLASS: Record<CellType, string> = {
   external: "bg-gradient-to-br from-[rgb(var(--color-accent-external)/0.08)] to-transparent",
 };
 
-export function Cell({ cell, onClick, onHover, onDoubleClick }: CellProps) {
+export function Cell({
+  cell,
+  onClick,
+  onHover,
+  onDoubleClick,
+  onDragStart,
+  onDragEnd,
+}: CellProps) {
   const editMode = useEditMode();
 
   return (
     <div
       role="button"
       tabIndex={0}
+      draggable={editMode.enabled}
+      onDragStart={(e) => {
+        e.dataTransfer.setData("text/plain", cell.id);
+        onDragStart?.(cell);
+      }}
+      onDragEnd={() => onDragEnd?.()}
       onClick={() => onClick(cell)}
       onDoubleClick={() => onDoubleClick?.(cell)}
       onMouseEnter={() => onHover(cell)}
@@ -45,7 +60,7 @@ export function Cell({ cell, onClick, onHover, onDoubleClick }: CellProps) {
         flex flex-col items-center justify-center text-center
         px-2 py-3 min-h-[90px]
         ${GRADIENT_CLASS[cell.type]}
-        ${editMode.enabled ? "outline-dashed outline-1 outline-accent/50" : ""}
+        ${editMode.enabled ? "outline-dashed outline-1 outline-accent/50 cursor-move" : ""}
         hover:brightness-110 transition-all
       `}
       style={{
@@ -55,9 +70,7 @@ export function Cell({ cell, onClick, onHover, onDoubleClick }: CellProps) {
       data-cell-id={cell.id}
     >
       <div className="text-xl mb-1 opacity-90">{cell.icon}</div>
-      <div className={`font-medium ${ACCENT_CLASS[cell.type]}`}>
-        {cell.title}
-      </div>
+      <div className={`font-medium ${ACCENT_CLASS[cell.type]}`}>{cell.title}</div>
       {cell.subtitleJa && (
         <div className="text-[10px] text-text-muted mt-0.5 font-jp">
           {cell.subtitleJa}

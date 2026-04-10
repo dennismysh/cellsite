@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { cellsApi } from "../lib/cells.js";
 import {
@@ -20,9 +20,37 @@ type PopoverState =
   | { mode: "edit"; cell: Cell }
   | null;
 
+function canDropAt(
+  cells: Cell[],
+  dragged: Cell,
+  targetRow: number,
+  targetCol: number,
+): boolean {
+  // All positions the dragged cell would occupy at the target
+  for (let r = targetRow; r < targetRow + dragged.rowSpan; r++) {
+    for (let c = targetCol; c < targetCol + dragged.colSpan; c++) {
+      for (const other of cells) {
+        if (other.id === dragged.id) continue;
+        const otherEndRow = other.row + other.rowSpan - 1;
+        const otherEndCol = other.col + other.colSpan - 1;
+        if (
+          r >= other.row &&
+          r <= otherEndRow &&
+          c >= other.col &&
+          c <= otherEndCol
+        ) {
+          return false;
+        }
+      }
+    }
+  }
+  return true;
+}
+
 export function SpreadsheetPage() {
   const [expanded, setExpanded] = useState<Cell | null>(null);
   const [popover, setPopover] = useState<PopoverState>(null);
+  const draggedCell = useRef<Cell | null>(null);
   const { setHoveredCell, setHoveredPosition } = useHoveredCell();
   const editMode = useEditMode();
   const queryClient = useQueryClient();
@@ -54,6 +82,14 @@ export function SpreadsheetPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["cells", "creative"] });
       setPopover(null);
+    },
+  });
+
+  const moveMutation = useMutation({
+    mutationFn: ({ id, row, col }: { id: string; row: number; col: number }) =>
+      cellsApi.update(id, { row, col }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["cells", "creative"] });
     },
   });
 
@@ -100,6 +136,22 @@ export function SpreadsheetPage() {
     }
   };
 
+  const handleDragStart = (cell: Cell) => {
+    draggedCell.current = cell;
+  };
+
+  const handleDragEnd = () => {
+    draggedCell.current = null;
+  };
+
+  const handleDropOnPosition = (row: number, col: number) => {
+    const dragged = draggedCell.current;
+    if (!dragged) return;
+    if (!canDropAt(cells, dragged, row, col)) return;
+    moveMutation.mutate({ id: dragged.id, row, col });
+    draggedCell.current = null;
+  };
+
   return (
     <div className="flex flex-col h-screen bg-base text-text">
       <Ribbon />
@@ -117,6 +169,9 @@ export function SpreadsheetPage() {
           onCellDoubleClick={handleCellDoubleClick}
           onCellHover={handleCellHover}
           onEmptyDoubleClick={handleEmptyDoubleClick}
+          onCellDragStart={handleDragStart}
+          onCellDragEnd={handleDragEnd}
+          onCellDropOnPosition={handleDropOnPosition}
         />
       )}
       <SheetTabs />

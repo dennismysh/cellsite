@@ -11,6 +11,9 @@ interface GridProps {
   onCellDoubleClick?: (cell: CellData) => void;
   onCellHover: (cell: CellData | null, pos: { row: number; col: number } | null) => void;
   onEmptyDoubleClick: (row: number, col: number) => void;
+  onCellDragStart?: (cell: CellData) => void;
+  onCellDragEnd?: () => void;
+  onCellDropOnPosition?: (row: number, col: number) => void;
 }
 
 export function Grid({
@@ -21,10 +24,12 @@ export function Grid({
   onCellDoubleClick,
   onCellHover,
   onEmptyDoubleClick,
+  onCellDragStart,
+  onCellDragEnd,
+  onCellDropOnPosition,
 }: GridProps) {
   const editMode = useEditMode();
 
-  // Build a map of (row,col) → cell to cover its full span
   const occupied = new Map<string, CellData>();
   const topLeft = new Map<string, CellData>();
   for (const cell of cells) {
@@ -42,15 +47,9 @@ export function Grid({
     <div className="flex-1 overflow-auto">
       <div
         className="grid"
-        style={{
-          gridTemplateColumns,
-          gridAutoRows: "minmax(90px, auto)",
-        }}
+        style={{ gridTemplateColumns, gridAutoRows: "minmax(90px, auto)" }}
       >
-        {/* Empty corner */}
         <div className="bg-surface border-r border-b border-border sticky top-0 left-0 z-20 h-7" />
-
-        {/* Column headers */}
         {Array.from({ length: cols }, (_, c) => (
           <div
             key={`col-${c}`}
@@ -60,92 +59,66 @@ export function Grid({
           </div>
         ))}
 
-        {/* Rows */}
-        {Array.from({ length: rows }, (_, r) => (
-          <RowContent
-            key={`row-${r}`}
-            row={r}
-            cols={cols}
-            occupied={occupied}
-            topLeft={topLeft}
-            onCellClick={onCellClick}
-            onCellDoubleClick={onCellDoubleClick}
-            onCellHover={onCellHover}
-            onEmptyDoubleClick={onEmptyDoubleClick}
-            editModeEnabled={editMode.enabled}
-          />
-        ))}
+        {Array.from({ length: rows }, (_, r) => {
+          const elements: JSX.Element[] = [];
+          elements.push(
+            <div
+              key={`rownum-${r}`}
+              className="bg-surface border-r border-b border-border text-text-muted text-xs text-center sticky left-0 z-10 flex items-center justify-center"
+            >
+              {r + 1}
+            </div>,
+          );
+
+          for (let c = 0; c < cols; c++) {
+            const key = `${r},${c}`;
+            const occ = occupied.get(key);
+            if (occ && topLeft.get(key) === occ) {
+              elements.push(
+                <Cell
+                  key={`cell-${occ.id}`}
+                  cell={occ}
+                  onClick={onCellClick}
+                  onDoubleClick={onCellDoubleClick}
+                  onDragStart={onCellDragStart}
+                  onDragEnd={onCellDragEnd}
+                  onHover={(hoveredCell) =>
+                    onCellHover(
+                      hoveredCell,
+                      hoveredCell
+                        ? { row: hoveredCell.row, col: hoveredCell.col }
+                        : null,
+                    )
+                  }
+                />,
+              );
+            } else if (!occ) {
+              elements.push(
+                <div
+                  key={`empty-${r}-${c}`}
+                  className={`
+                    border-r border-b border-border bg-muted min-h-[90px]
+                    ${editMode.enabled ? "outline-dashed outline-1 outline-border cursor-cell" : ""}
+                  `}
+                  onMouseEnter={() => onCellHover(null, { row: r, col: c })}
+                  onMouseLeave={() => onCellHover(null, null)}
+                  onDoubleClick={() => editMode.enabled && onEmptyDoubleClick(r, c)}
+                  onDragOver={(e) => {
+                    if (editMode.enabled) e.preventDefault();
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    if (editMode.enabled) onCellDropOnPosition?.(r, c);
+                  }}
+                  data-row={r}
+                  data-col={c}
+                />,
+              );
+            }
+          }
+          return <div key={`row-${r}`} style={{ display: "contents" }}>{elements}</div>;
+        })}
       </div>
     </div>
   );
-}
-
-interface RowContentProps {
-  row: number;
-  cols: number;
-  occupied: Map<string, CellData>;
-  topLeft: Map<string, CellData>;
-  onCellClick: (cell: CellData) => void;
-  onCellDoubleClick?: (cell: CellData) => void;
-  onCellHover: (cell: CellData | null, pos: { row: number; col: number } | null) => void;
-  onEmptyDoubleClick: (row: number, col: number) => void;
-  editModeEnabled: boolean;
-}
-
-function RowContent({
-  row,
-  cols,
-  occupied,
-  topLeft,
-  onCellClick,
-  onCellDoubleClick,
-  onCellHover,
-  onEmptyDoubleClick,
-  editModeEnabled,
-}: RowContentProps) {
-  const elements: JSX.Element[] = [];
-
-  // Row number
-  elements.push(
-    <div
-      key={`rownum-${row}`}
-      className="bg-surface border-r border-b border-border text-text-muted text-xs text-center sticky left-0 z-10 flex items-center justify-center"
-    >
-      {row + 1}
-    </div>,
-  );
-
-  for (let c = 0; c < cols; c++) {
-    const key = `${row},${c}`;
-    const occ = occupied.get(key);
-    if (occ && topLeft.get(key) === occ) {
-      elements.push(
-        <Cell
-          key={`cell-${occ.id}`}
-          cell={occ}
-          onClick={onCellClick}
-          onDoubleClick={onCellDoubleClick}
-          onHover={(c) => onCellHover(c, { row, col: c?.col ?? 0 })}
-        />,
-      );
-    } else if (!occ) {
-      elements.push(
-        <div
-          key={`empty-${row}-${c}`}
-          className={`
-            border-r border-b border-border bg-muted min-h-[90px]
-            ${editModeEnabled ? "outline-dashed outline-1 outline-border cursor-cell" : ""}
-          `}
-          onMouseEnter={() => onCellHover(null, { row, col: c })}
-          onMouseLeave={() => onCellHover(null, null)}
-          onDoubleClick={() => editModeEnabled && onEmptyDoubleClick(row, c)}
-          data-row={row}
-          data-col={c}
-        />,
-      );
-    }
-    // If occupied but not top-left, skip (already spanned)
-  }
-
-  return <>{elements}</>;
 }
