@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { cellsApi } from "../lib/cells.js";
 import {
@@ -15,6 +15,12 @@ import { CellConfigPopover } from "../editors/CellConfigPopover.js";
 import { useHoveredCell } from "./useHoveredCell.js";
 import { useEditMode } from "./useEditMode.js";
 import { useCurrentSheet } from "./useCurrentSheet.js";
+import { useZoomLevel } from "./useZoomLevel.js";
+
+// Matches the hard-coded values in Grid.tsx's grid template.
+const ROW_HEADER_PX = 32;
+const BASE_COL_PX = 120;
+const MIN_FIT_MULTIPLIER = 0.25;
 
 type PopoverState =
   | { mode: "create"; position: { row: number; col: number } }
@@ -52,10 +58,37 @@ export function SpreadsheetPage() {
   const [expanded, setExpanded] = useState<Cell | null>(null);
   const [popover, setPopover] = useState<PopoverState>(null);
   const draggedCell = useRef<Cell | null>(null);
+  const [scrollContainer, setScrollContainer] =
+    useState<HTMLDivElement | null>(null);
   const { setHoveredCell, setHoveredPosition } = useHoveredCell();
   const editMode = useEditMode();
   const currentSheet = useCurrentSheet((s) => s.currentSheet);
   const queryClient = useQueryClient();
+
+  // Callback ref so we rewire the ResizeObserver whenever the scroll
+  // container mounts or unmounts (e.g., while the grid toggles loading).
+  const scrollContainerRef = useCallback((el: HTMLDivElement | null) => {
+    setScrollContainer(el);
+  }, []);
+
+  // Keep the "fit" zoom multiplier in sync with the scroll container size
+  // so that when level === "fit", all columns collapse to fit the viewport.
+  useEffect(() => {
+    if (!scrollContainer) return;
+    const cols = DEFAULT_GRID_COLS;
+    const update = () => {
+      const width = scrollContainer.clientWidth;
+      if (width <= 0) return;
+      const raw = (width - ROW_HEADER_PX) / (cols * BASE_COL_PX);
+      const clamped = Math.max(MIN_FIT_MULTIPLIER, Math.min(1, raw));
+      useZoomLevel.getState().setFitMultiplier(clamped);
+    };
+    update();
+    if (typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(update);
+    observer.observe(scrollContainer);
+    return () => observer.disconnect();
+  }, [scrollContainer]);
 
   const { data: cells = [], isLoading } = useQuery({
     queryKey: ["cells", currentSheet],
@@ -164,19 +197,21 @@ export function SpreadsheetPage() {
           Loading grid…
         </div>
       ) : (
-        <Grid
-          key={currentSheet}
-          cells={cells}
-          cols={DEFAULT_GRID_COLS}
-          rows={DEFAULT_GRID_ROWS}
-          onCellClick={handleCellClick}
-          onCellDoubleClick={handleCellDoubleClick}
-          onCellHover={handleCellHover}
-          onEmptyDoubleClick={handleEmptyDoubleClick}
-          onCellDragStart={handleDragStart}
-          onCellDragEnd={handleDragEnd}
-          onCellDropOnPosition={handleDropOnPosition}
-        />
+        <div ref={scrollContainerRef} className="flex-1 overflow-auto">
+          <Grid
+            key={currentSheet}
+            cells={cells}
+            cols={DEFAULT_GRID_COLS}
+            rows={DEFAULT_GRID_ROWS}
+            onCellClick={handleCellClick}
+            onCellDoubleClick={handleCellDoubleClick}
+            onCellHover={handleCellHover}
+            onEmptyDoubleClick={handleEmptyDoubleClick}
+            onCellDragStart={handleDragStart}
+            onCellDragEnd={handleDragEnd}
+            onCellDropOnPosition={handleDropOnPosition}
+          />
+        </div>
       )}
       <SheetTabs />
       {expanded && (
