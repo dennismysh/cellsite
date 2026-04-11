@@ -153,7 +153,7 @@ export function SpreadsheetPage() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-base text-text">
+    <div className="flex flex-col h-dvh bg-base text-text">
       <Ribbon />
       <FormulaBar />
       {isLoading ? (
