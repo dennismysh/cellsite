@@ -128,7 +128,11 @@ export function Grid({
     <div className="flex-1 overflow-auto">
       <div
         className="grid min-w-max"
-        style={{ gridTemplateColumns, gridAutoRows: "minmax(90px, auto)" }}
+        style={{
+          gridTemplateColumns,
+          gridTemplateRows: "28px",
+          gridAutoRows: "minmax(90px, auto)",
+        }}
       >
         {gridChildren}
       </div>
