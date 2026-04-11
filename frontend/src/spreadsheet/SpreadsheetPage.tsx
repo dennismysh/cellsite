@@ -14,6 +14,7 @@ import { ExpandedCell } from "./ExpandedCell.js";
 import { CellConfigPopover } from "../editors/CellConfigPopover.js";
 import { useHoveredCell } from "./useHoveredCell.js";
 import { useEditMode } from "./useEditMode.js";
+import { useCurrentSheet } from "./useCurrentSheet.js";
 
 type PopoverState =
   | { mode: "create"; position: { row: number; col: number } }
@@ -53,17 +54,19 @@ export function SpreadsheetPage() {
   const draggedCell = useRef<Cell | null>(null);
   const { setHoveredCell, setHoveredPosition } = useHoveredCell();
   const editMode = useEditMode();
+  const currentSheet = useCurrentSheet((s) => s.currentSheet);
   const queryClient = useQueryClient();
 
   const { data: cells = [], isLoading } = useQuery({
-    queryKey: ["cells", "creative"],
-    queryFn: () => cellsApi.list("creative"),
+    queryKey: ["cells", currentSheet],
+    queryFn: () => cellsApi.list(currentSheet),
   });
 
   const createMutation = useMutation({
-    mutationFn: (input: CellCreateInput) => cellsApi.create(input),
+    mutationFn: (input: CellCreateInput) =>
+      cellsApi.create({ ...input, sheet: currentSheet }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["cells", "creative"] });
+      queryClient.invalidateQueries({ queryKey: ["cells", currentSheet] });
       setPopover(null);
     },
   });
@@ -72,7 +75,7 @@ export function SpreadsheetPage() {
     mutationFn: ({ id, input }: { id: string; input: CellCreateInput }) =>
       cellsApi.update(id, input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["cells", "creative"] });
+      queryClient.invalidateQueries({ queryKey: ["cells", currentSheet] });
       setPopover(null);
     },
   });
@@ -80,7 +83,7 @@ export function SpreadsheetPage() {
   const deleteMutation = useMutation({
     mutationFn: (id: string) => cellsApi.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["cells", "creative"] });
+      queryClient.invalidateQueries({ queryKey: ["cells", currentSheet] });
       setPopover(null);
     },
   });
@@ -89,7 +92,7 @@ export function SpreadsheetPage() {
     mutationFn: ({ id, row, col }: { id: string; row: number; col: number }) =>
       cellsApi.update(id, { row, col }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["cells", "creative"] });
+      queryClient.invalidateQueries({ queryKey: ["cells", currentSheet] });
     },
   });
 
@@ -162,6 +165,7 @@ export function SpreadsheetPage() {
         </div>
       ) : (
         <Grid
+          key={currentSheet}
           cells={cells}
           cols={DEFAULT_GRID_COLS}
           rows={DEFAULT_GRID_ROWS}

@@ -144,6 +144,53 @@ describe("cells routes", () => {
     expect(list.json()).toEqual([]);
   });
 
+  it("GET /api/cells?sheet=X isolates cells by sheet", async () => {
+    await app.inject({
+      method: "POST",
+      url: "/api/cells",
+      payload: {
+        sheet: "writing",
+        row: 0,
+        col: 0,
+        type: "external",
+        title: "W1",
+        icon: "✍️",
+        externalUrl: "https://w.example",
+      },
+    });
+    await app.inject({
+      method: "POST",
+      url: "/api/cells",
+      payload: {
+        sheet: "creative",
+        row: 0,
+        col: 0,
+        type: "external",
+        title: "C1",
+        icon: "🎨",
+        externalUrl: "https://c.example",
+      },
+    });
+
+    const writing = await app.inject({
+      method: "GET",
+      url: "/api/cells?sheet=writing",
+    });
+    expect(writing.statusCode).toBe(200);
+    const writingBody = writing.json();
+    expect(writingBody).toHaveLength(1);
+    expect(writingBody[0].title).toBe("W1");
+    expect(writingBody[0].sheet).toBe("writing");
+
+    const creative = await app.inject({
+      method: "GET",
+      url: "/api/cells?sheet=creative",
+    });
+    const creativeBody = creative.json();
+    expect(creativeBody).toHaveLength(1);
+    expect(creativeBody[0].title).toBe("C1");
+  });
+
   it("POST /api/cells/reorder updates positions atomically", async () => {
     const [a] = await db
       .insert(cells)

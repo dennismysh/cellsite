@@ -42,3 +42,24 @@ export const cells = pgTable(
 
 export type DbCell = typeof cells.$inferSelect;
 export type DbCellInsert = typeof cells.$inferInsert;
+
+export const sheets = pgTable(
+  "sheets",
+  {
+    id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+    name: text("name").notNull(),
+    position: integer("position").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => ({
+    nameUnique: uniqueIndex("sheets_name_unique").on(table.name),
+  }),
+);
+
+export type DbSheet = typeof sheets.$inferSelect;
+export type DbSheetInsert = typeof sheets.$inferInsert;

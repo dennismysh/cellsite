@@ -56,6 +56,18 @@ export const CELL_TYPES: readonly CellType[] = [
   "external",
 ] as const;
 
+export interface Sheet {
+  id: string;
+  name: string;
+  position: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SheetCreateInput {
+  name: string;
+}
+
 export const DEFAULT_SHEET = "creative";
 export const DEFAULT_GRID_COLS = 10;
 export const DEFAULT_GRID_ROWS = 20;
