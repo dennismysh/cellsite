@@ -2,6 +2,7 @@ import type { Cell as CellData } from "@cellsite/shared";
 import { Cell } from "./Cell.js";
 import { colLetter } from "./cellRef.js";
 import { useEditMode } from "./useEditMode.js";
+import { effectiveZoom, useZoomLevel } from "./useZoomLevel.js";
 
 interface GridProps {
   cells: CellData[];
@@ -29,6 +30,7 @@ export function Grid({
   onCellDropOnPosition,
 }: GridProps) {
   const editMode = useEditMode();
+  const zoom = useZoomLevel(effectiveZoom);
 
   const occupied = new Map<string, CellData>();
   const topLeft = new Map<string, CellData>();
@@ -41,7 +43,11 @@ export function Grid({
     }
   }
 
-  const gridTemplateColumns = `32px repeat(${cols}, minmax(120px, 1fr))`;
+  // Use Math.floor for colMin so a fit-zoom multiplier computed from the
+  // container width never rounds up and overflows the container.
+  const colMin = Math.max(20, Math.floor(120 * zoom));
+  const rowMin = Math.max(24, Math.round(90 * zoom));
+  const gridTemplateColumns = `32px repeat(${cols}, minmax(${colMin}px, 1fr))`;
 
   const gridChildren: JSX.Element[] = [];
 
@@ -103,9 +109,10 @@ export function Grid({
           <div
             key={`empty-${r}-${c}`}
             className={`
-              border-r border-b border-border bg-muted min-h-[90px]
+              border-r border-b border-border bg-muted
               ${editMode.enabled ? "outline-dashed outline-1 outline-border cursor-cell" : ""}
             `}
+            style={{ minHeight: rowMin }}
             onMouseEnter={() => onCellHover(null, { row: r, col: c })}
             onMouseLeave={() => onCellHover(null, null)}
             onDoubleClick={() => editMode.enabled && onEmptyDoubleClick(r, c)}
@@ -125,17 +132,15 @@ export function Grid({
   }
 
   return (
-    <div className="flex-1 overflow-auto">
-      <div
-        className="grid min-w-max"
-        style={{
-          gridTemplateColumns,
-          gridTemplateRows: "28px",
-          gridAutoRows: "minmax(90px, auto)",
-        }}
-      >
-        {gridChildren}
-      </div>
+    <div
+      className="grid min-w-max"
+      style={{
+        gridTemplateColumns,
+        gridTemplateRows: "28px",
+        gridAutoRows: `minmax(${rowMin}px, auto)`,
+      }}
+    >
+      {gridChildren}
     </div>
   );
 }
