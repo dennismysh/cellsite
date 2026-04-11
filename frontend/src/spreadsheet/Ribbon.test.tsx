@@ -3,10 +3,13 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Ribbon } from "./Ribbon.js";
 import { useEditMode } from "./useEditMode.js";
+import { useThemeStore } from "../theme/useThemeStore.js";
 
 describe("Ribbon", () => {
   beforeEach(() => {
     useEditMode.setState({ enabled: false });
+    localStorage.clear();
+    useThemeStore.setState({ mode: "system" });
   });
 
   it("renders the site name in katakana", () => {
@@ -20,6 +23,13 @@ describe("Ribbon", () => {
     expect(screen.getByText("Content")).toBeInTheDocument();
     expect(screen.getByText("About")).toBeInTheDocument();
     expect(screen.getByText("Contact")).toBeInTheDocument();
+  });
+
+  it("renders a theme toggle", () => {
+    render(<Ribbon />);
+    expect(
+      screen.getByRole("button", { name: /theme:/i }),
+    ).toBeInTheDocument();
   });
 
   it("renders an edit mode toggle that toggles the store", async () => {

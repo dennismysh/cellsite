@@ -1,3 +1,4 @@
+import { ThemeToggle } from "../theme/ThemeToggle.js";
 import { useEditMode } from "./useEditMode.js";
 
 const NAV_TABS = ["Home", "Content", "About", "Contact"] as const;
@@ -25,6 +26,7 @@ export function Ribbon() {
           </button>
         ))}
       </nav>
+      <ThemeToggle />
       <button
         type="button"
         onClick={editMode.toggle}

@@ -1,22 +1,27 @@
 import { useEffect, type ReactNode } from "react";
-
-function getPreferredTheme(): "light" | "dark" {
-  if (typeof window === "undefined") return "light";
-  return window.matchMedia("(prefers-color-scheme: dark)").matches
-    ? "dark"
-    : "light";
-}
+import { useThemeStore } from "./useThemeStore.js";
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
+  const mode = useThemeStore((s) => s.mode);
+
   useEffect(() => {
-    const apply = () => {
-      document.documentElement.setAttribute("data-theme", getPreferredTheme());
-    };
-    apply();
+    if (typeof window === "undefined") return;
+
     const media = window.matchMedia("(prefers-color-scheme: dark)");
-    media.addEventListener("change", apply);
-    return () => media.removeEventListener("change", apply);
-  }, []);
+    const apply = () => {
+      const effective =
+        mode === "system" ? (media.matches ? "dark" : "light") : mode;
+      document.documentElement.setAttribute("data-theme", effective);
+    };
+
+    apply();
+
+    if (mode === "system") {
+      media.addEventListener("change", apply);
+      return () => media.removeEventListener("change", apply);
+    }
+    return undefined;
+  }, [mode]);
 
   return <>{children}</>;
 }
