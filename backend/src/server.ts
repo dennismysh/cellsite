@@ -2,6 +2,7 @@ import Fastify from "fastify";
 import cors from "@fastify/cors";
 import { env } from "./env.js";
 import { registerCellRoutes } from "./routes/cells.js";
+import { registerSheetRoutes } from "./routes/sheets.js";
 import { registerStaticFrontend } from "./static.js";
 
 export async function buildServer() {
@@ -21,6 +22,7 @@ export async function buildServer() {
   });
 
   await registerCellRoutes(fastify);
+  await registerSheetRoutes(fastify);
 
   if (env.NODE_ENV === "production") {
     await registerStaticFrontend(fastify);

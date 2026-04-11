@@ -7,7 +7,7 @@ import type {
 import { api } from "./api.js";
 
 export const cellsApi = {
-  list: (sheet = "creative") =>
+  list: (sheet: string) =>
     api.get<Cell[]>(`/cells?sheet=${encodeURIComponent(sheet)}`),
   create: (input: CellCreateInput) => api.post<Cell>("/cells", input),
   update: (id: string, input: CellUpdateInput) =>
