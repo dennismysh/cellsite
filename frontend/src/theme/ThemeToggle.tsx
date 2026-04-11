@@ -18,7 +18,7 @@ export function ThemeToggle() {
       onClick={cycle}
       aria-label={description}
       title={description}
-      className="px-3 py-1 rounded border border-border text-xs bg-muted text-text-muted hover:text-text transition-colors"
+      className="shrink-0 px-3 py-1 rounded border border-border text-xs bg-muted text-text-muted hover:text-text transition-colors"
     >
       <span aria-hidden="true">{icon}</span> {label}
     </button>
